@@ -1,93 +1,109 @@
-let isDOBOpen = false;
-let dateOfBirth;
-const settingCogEl = document.getElementById("settingIcon");
-const settingContentEl = document.getElementById("settingContent");
-const initialTextEl = document.getElementById("initialText");
-const afterDOBBtnTxtEl = document.getElementById("afterDOBBtnTxt");
-const dobButtonEl = document.getElementById("dobButton");
-const dobInputEl = document.getElementById("dobInput");
+console.log("Welcome to Spotify");
 
-const yearEl = document.getElementById("year");
-const monthEl = document.getElementById("month");
-const dayEl = document.getElementById("day");
-const hourEl = document.getElementById("hour");
-const minuteEl = document.getElementById("minute");
-const secondEl = document.getElementById("second");
+// Initialize the Variables
+let songIndex = 0;
+let audioElement = new Audio('songs/1.mp3');
+let masterPlay = document.getElementById('masterPlay');
+let myProgressBar = document.getElementById('myProgressBar');
+let gif = document.getElementById('gif');
+let masterSongName = document.getElementById('masterSongName');
+let songItems = Array.from(document.getElementsByClassName('songItem'));
 
-console.log(localStorage.getItem("year"));
+let songs = [
+    {songName: "s.mp3", filePath: "songs/s.mp3", coverPath: "covers/1.jpg"},
+    {songName: "Cielo - Huma-Huma", filePath: "songs/2.mp3", coverPath: "covers/2.jpg"},
+    {songName: "DEAF KEV - Invincible [NCS Release]-320k", filePath: "songs/3.mp3", coverPath: "covers/3.jpg"},
+    {songName: "Different Heaven & EH!DE - My Heart [NCS Release]", filePath: "songs/4.mp3", coverPath: "covers/4.jpg"},
+    {songName: "Janji-Heroes-Tonight-feat-Johnning-NCS-Release", filePath: "songs/5.mp3", coverPath: "covers/5.jpg"},
+    {songName: "Rabba - Salam-e-Ishq", filePath: "songs/2.mp3", coverPath: "covers/6.jpg"},
+    {songName: "Sakhiyaan - Salam-e-Ishq", filePath: "songs/2.mp3", coverPath: "covers/7.jpg"},
+    {songName: "Bhula Dena - Salam-e-Ishq", filePath: "songs/2.mp3", coverPath: "covers/8.jpg"},
+    {songName: "Tumhari Kasam - Salam-e-Ishq", filePath: "songs/2.mp3", coverPath: "covers/9.jpg"},
+    {songName: "Na Jaana - Salam-e-Ishq", filePath: "songs/4.mp3", coverPath: "covers/10.jpg"},
+]
 
-const makeTwoDigitNumber = (number) => {
-  return number > 9 ? number : `0${number}`;
-};
+songItems.forEach((element, i)=>{ 
+    element.getElementsByTagName("img")[0].src = songs[i].coverPath; 
+    element.getElementsByClassName("songName")[0].innerText = songs[i].songName; 
+})
+ 
 
-const toggleDateOfBirthSelector = () => {
-  if (isDOBOpen) {
-    settingContentEl.classList.add("hide");
-  } else {
-    settingContentEl.classList.remove("hide");
-  }
-  isDOBOpen = !isDOBOpen;
+// Handle play/pause click
+masterPlay.addEventListener('click', ()=>{
+    if(audioElement.paused || audioElement.currentTime<=0){
+        audioElement.play();
+        masterPlay.classList.remove('fa-play-circle');
+        masterPlay.classList.add('fa-pause-circle');
+        gif.style.opacity = 1;
+    }
+    else{
+        audioElement.pause();
+        masterPlay.classList.remove('fa-pause-circle');
+        masterPlay.classList.add('fa-play-circle');
+        gif.style.opacity = 0;
+    }
+})
+// Listen to Events
+audioElement.addEventListener('timeupdate', ()=>{ 
+    // Update Seekbar
+    progress = parseInt((audioElement.currentTime/audioElement.duration)* 100); 
+    myProgressBar.value = progress;
+})
 
-  console.log("Toggle", isDOBOpen);
-};
+myProgressBar.addEventListener('change', ()=>{
+    audioElement.currentTime = myProgressBar.value * audioElement.duration/100;
+})
 
-const updateAge = () => {
-  const currentDate = new Date();
-  const dateDiff = currentDate - dateOfBirth;
-  const year = Math.floor(dateDiff / (1000 * 60 * 60 * 24 * 365));
-  const month = Math.floor((dateDiff / (1000 * 60 * 60 * 24 * 365)) % 12);
-  const day = Math.floor(dateDiff / (1000 * 60 * 60 * 24)) % 30;
-  const hour = Math.floor(dateDiff / (1000 * 60 * 60)) % 24;
-  const minute = Math.floor(dateDiff / (1000 * 60)) % 60;
-  const second = Math.floor(dateDiff / 1000) % 60;
+const makeAllPlays = ()=>{
+    Array.from(document.getElementsByClassName('songItemPlay')).forEach((element)=>{
+        element.classList.remove('fa-pause-circle');
+        element.classList.add('fa-play-circle');
+    })
+}
 
-  yearEl.innerHTML = makeTwoDigitNumber(year);
-  monthEl.innerHTML = makeTwoDigitNumber(month);
-  dayEl.innerHTML = makeTwoDigitNumber(day);
-  hourEl.innerHTML = makeTwoDigitNumber(hour);
-  minuteEl.innerHTML = makeTwoDigitNumber(minute);
-  secondEl.innerHTML = makeTwoDigitNumber(second);
-};
+Array.from(document.getElementsByClassName('songItemPlay')).forEach((element)=>{
+    element.addEventListener('click', (e)=>{ 
+        makeAllPlays();
+        songIndex = parseInt(e.target.id);
+        e.target.classList.remove('fa-play-circle');
+        e.target.classList.add('fa-pause-circle');
+        audioElement.src = `songs/${songIndex+1}.mp3`;
+        masterSongName.innerText = songs[songIndex].songName;
+        audioElement.currentTime = 0;
+        audioElement.play();
+        gif.style.opacity = 1;
+        masterPlay.classList.remove('fa-play-circle');
+        masterPlay.classList.add('fa-pause-circle');
+    })
+})
 
-const localStorageGetter = () => {
-  const year = localStorage.getItem("year");
-  const month = localStorage.getItem("month");
-  const date = localStorage.getItem("date");
-  if (year && month && date) {
-    dateOfBirth = new Date(year, month, date);
-  }
+document.getElementById('next').addEventListener('click', ()=>{
+    if(songIndex>=9){
+        songIndex = 0
+    }
+    else{
+        songIndex += 1;
+    }
+    audioElement.src = `songs/${songIndex+1}.mp3`;
+    masterSongName.innerText = songs[songIndex].songName;
+    audioElement.currentTime = 0;
+    audioElement.play();
+    masterPlay.classList.remove('fa-play-circle');
+    masterPlay.classList.add('fa-pause-circle');
 
-  updateAge();
-};
+})
 
-const contentToggler = () => {
-  updateAge();
-  if (dateOfBirth) {
-    initialTextEl.classList.add("hide");
-    afterDOBBtnTxtEl.classList.remove("hide");
-  } else {
-    afterDOBBtnTxtEl.classList.add("hide");
-    initialTextEl.classList.remove("hide");
-  }
-};
-
-const setDOBHandler = () => {
-  const dateString = dobInputEl.value;
-
-  dateOfBirth = dateString ? new Date(dateString) : null;
-
-  if (dateOfBirth) {
-    localStorage.setItem("year", dateOfBirth.getFullYear());
-    localStorage.setItem("month", dateOfBirth.getMonth());
-    localStorage.setItem("date", dateOfBirth.getDate());
-  }
-
-  contentToggler();
-  setInterval(() => updateAge(), 1000);
-};
-
-localStorageGetter();
-contentToggler();
-
-settingCogEl.addEventListener("click", toggleDateOfBirthSelector);
-dobButtonEl.addEventListener("click", setDOBHandler);
+document.getElementById('previous').addEventListener('click', ()=>{
+    if(songIndex<=0){
+        songIndex = 0
+    }
+    else{
+        songIndex -= 1;
+    }
+    audioElement.src = `songs/${songIndex+1}.mp3`;
+    masterSongName.innerText = songs[songIndex].songName;
+    audioElement.currentTime = 0;
+    audioElement.play();
+    masterPlay.classList.remove('fa-play-circle');
+    masterPlay.classList.add('fa-pause-circle');
+})
